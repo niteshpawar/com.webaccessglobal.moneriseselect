@@ -72,12 +72,12 @@ class MonerisEselectIPN extends CRM_Core_Payment_BaseIPN {
    *
    * @param array  $privateData  contains the CiviCRM related data
    * @param string $component    the CiviCRM component
-   * @param array  $merchantData contains the Merchant related data
+   * @param array  $moneriseselectData contains the Merchant related data
    *
    * @return void
    *
    */
-  function newOrderNotify($success, $privateData, $component, $merchantData) {
+  function newOrderNotify($success, $privateData, $component, $moneriseselectData) {
     $ids = $input = $params = array();
 
     $input['component'] = strtolower($component);
@@ -104,9 +104,9 @@ class MonerisEselectIPN extends CRM_Core_Payment_BaseIPN {
     // make sure the invoice is valid and matches what we have in the contribution record
     $contribution = & $objects['contribution'];
     $input['invoice'] = $privateData['invoiceID'];
-    $input['trxn_id'] = $merchantData['trxn_id'];
+    $input['trxn_id'] = $moneriseselectData['trxn_id'];
     $input['is_test'] = $privateData['is_test'];
-    $input['amount'] = $merchantData['PurchaseAmount'];
+    $input['amount'] = $moneriseselectData['PurchaseAmount'];
 
     $transaction = new CRM_Core_Transaction();
 
@@ -119,7 +119,7 @@ class MonerisEselectIPN extends CRM_Core_Payment_BaseIPN {
       Invalid-Bad_Source : The Referring URL is not correct, validation failed
      */
 
-    switch ($merchantData['status']) {
+    switch ($moneriseselectData['status']) {
       case 'Invalid-ReConfirmed':
         break;
       case 'Invalid':
@@ -240,28 +240,28 @@ class MonerisEselectIPN extends CRM_Core_Payment_BaseIPN {
    * notification or request sent by the payment processor.
    * hex string from paymentexpress is passed to this function as hex string.
    */
-  function main($rawPostData) {
-    CRM_Core_Error::debug_var('$rawPostData', $rawPostData);
+  function main($moneriseselectPostData) {
+    CRM_Core_Error::debug_var('$moneriseselectPostData', $moneriseselectPostData);
     $config = CRM_Core_Config::singleton();
     $success = false;
 
-    $component = $rawPostData['rvar_module'];
-    $qfKey = $rawPostData['rvar_qfKey'];
+    $component = $moneriseselectPostData['rvar_module'];
+    $qfKey = $moneriseselectPostData['rvar_qfKey'];
 
     $privateData = $ids = $objects = array();
-    $privateData['transactionID'] = $rawPostData['bank_transaction_id'];
-    $privateData['contributionID'] = $rawPostData['rvar_contributionID'];
-    $privateData['contactID'] = $rawPostData['rvar_contactID'];
-    $privateData['invoiceID'] = $rawPostData['response_order_id'];
+    $privateData['transactionID'] = $moneriseselectPostData['bank_transaction_id'];
+    $privateData['contributionID'] = $moneriseselectPostData['rvar_contributionID'];
+    $privateData['contactID'] = $moneriseselectPostData['rvar_contactID'];
+    $privateData['invoiceID'] = $moneriseselectPostData['response_order_id'];
 
     if ($component == "event") {
-      $privateData['participantID'] = $rawPostData['rvar_participantID'];
-      $privateData['eventID'] = $rawPostData['rvar_eventID'];
+      $privateData['participantID'] = $moneriseselectPostData['rvar_participantID'];
+      $privateData['eventID'] = $moneriseselectPostData['rvar_eventID'];
     }
     else if ($component == "contribute") {
-      $privateData["membershipID"] = array_key_exists('rvar_membershipID', $rawPostData) ? $rawPostData['rvar_membershipID'] : '';
-      $privateData["relatedContactID"] = array_key_exists('rvar_relatedContactID', $rawPostData) ? $rawPostData['rvar_relatedContactID'] : '';
-      $privateData["onbehalf_dupe_alert"] = array_key_exists('rvar_onbehalf_dupe_alert', $rawPostData) ? $rawPostData['rvar_onbehalf_dupe_alert'] : '';
+      $privateData["membershipID"] = array_key_exists('rvar_membershipID', $moneriseselectPostData) ? $moneriseselectPostData['rvar_membershipID'] : '';
+      $privateData["relatedContactID"] = array_key_exists('rvar_relatedContactID', $moneriseselectPostData) ? $moneriseselectPostData['rvar_relatedContactID'] : '';
+      $privateData["onbehalf_dupe_alert"] = array_key_exists('rvar_onbehalf_dupe_alert', $moneriseselectPostData) ? $moneriseselectPostData['rvar_onbehalf_dupe_alert'] : '';
     }
 
     list ($mode, $component, $duplicateTransaction) = self::getContext($privateData);
@@ -272,7 +272,7 @@ class MonerisEselectIPN extends CRM_Core_Payment_BaseIPN {
      * Fix me as per civicrm versions
      * In below 4.2 version 'CRM_Core_BAO_PaymentProcessor'
      * */
-    $paymentProcessor = CRM_Financial_BAO_PaymentProcessor::getPayment($this->_paymentProcessor['id'], $mode);
+    $paymentProcessor = CRM_Core_BAO_PaymentProcessor::getPayment($this->_paymentProcessor['id'], $mode);
     $ipn = self::singleton($mode, $component, $paymentProcessor);
 
     /*
@@ -280,26 +280,26 @@ class MonerisEselectIPN extends CRM_Core_Payment_BaseIPN {
      * Verification response to ensure authenticity.
      */
     $url = $paymentProcessor['url_site'];
-    $params['ps_store_id'] = $paymentProcessor['signature'];
-    $params['hpp_key'] = $paymentProcessor['user_name'];
-    $params['transactionKey'] = $rawPostData['transactionKey'];
+    $moneriseselectParams['ps_store_id'] = $paymentProcessor['signature'];
+    $moneriseselectParams['hpp_key'] = $paymentProcessor['user_name'];
+    $moneriseselectParams['transactionKey'] = $moneriseselectPostData['transactionKey'];
 
-    $verifyTrans = $this->_transactionVerification($params, $url);
+    $verifyTrans = $this->_transactionVerification($moneriseselectParams, $url);
     CRM_Core_Error::debug_var('$verifyTrans', $verifyTrans);
 
 
-    $merchantData = array();
-    $merchantData['trxn_id'] = $rawPostData['bank_transaction_id'];
-    $merchantData['PurchaseAmount'] = $verifyTrans['amount'];
-    //$merchantData['transactionID'] = $verifyTrans['txn_num'];
-    $merchantData['status'] = $verifyTrans['status'];
+    $moneriseselectData = array();
+    $moneriseselectData['trxn_id'] = $moneriseselectPostData['bank_transaction_id'];
+    $moneriseselectData['PurchaseAmount'] = $verifyTrans['amount'];
+    //$moneriseselectData['transactionID'] = $verifyTrans['txn_num'];
+    $moneriseselectData['status'] = $verifyTrans['status'];
 
-    if ($verifyTrans['response_code'] < 50 && $rawPostData['result'] == 1 && $rawPostData['txn_num'] == $verifyTrans['txn_num']) {
+    if ($verifyTrans['response_code'] < 50 && $moneriseselectPostData['result'] == 1 && $moneriseselectPostData['txn_num'] == $verifyTrans['txn_num']) {
       $success = TRUE;
     }
 
     if ($duplicateTransaction == 0) {
-      $ipn->newOrderNotify($success, $privateData, $component, $merchantData);
+      $ipn->newOrderNotify($success, $privateData, $component, $moneriseselectData);
     }
 
     //Check status and take appropriate action

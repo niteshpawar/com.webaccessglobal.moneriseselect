@@ -1,7 +1,7 @@
 <?php
-require_once 'MonerisEselect.php';
-require_once 'moneriseselect.civix.php';
 
+require_once 'moneriseselect.civix.php';
+require_once 'MonerisEselect.php';
 /**
  * Implementation of hook_civicrm_config
  */

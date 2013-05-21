@@ -46,7 +46,7 @@ class com_webaccessglobal_moneriseselect extends CRM_Core_Payment {
   static function &singleton($mode, &$paymentProcessor) {
     $processorName = $paymentProcessor['name'];
     if (!isset(self::$_singleton[$processorName]) || self::$_singleton[$processorName] === NULL) {
-      self::$_singleton[$processorName] = new com_webaccessglobal_moneriseselect($mode, $paymentProcessor);
+      self::$_singleton[$processorName] = new com_webaccessglobal_MonerisEselect($mode, $paymentProcessor);
     }
     return self::$_singleton[$processorName];
   }

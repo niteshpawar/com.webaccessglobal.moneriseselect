@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
- <extension key="com.webaccessglobal.moneriseselect" type="payment">
+ <extension key="com.webaccessglobal.monerisEselect" type="payment">
 <downloadUrl>https://codeload.github.com/webaccess/com.webaccessglobal.moneris-eselect/zip/master</downloadUrl>
   <file>moneriseselect</file>
   <name>MonerisEselect</name>
