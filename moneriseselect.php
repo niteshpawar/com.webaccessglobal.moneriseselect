@@ -66,5 +66,25 @@ function moneriseselect_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
  * is installed, disabled, uninstalled.
  */
 function moneriseselect_civicrm_managed(&$entities) {
+
+  $entities[] = array(
+    'module' => 'com.webaccessglobal.moneriseselect',
+    'name' => 'MonerisEselect',
+    'entity' => 'PaymentProcessorType',
+    'params' => array(
+      'version' => 3,
+      'name' => 'MonerisEselect',
+      'title' => 'MonerisEselect',
+      'description' => 'Moneris Eselect Hosted Payment Processor',
+      'class_name' => 'Payment_moneriseselect',
+      'billing_mode' => 'notify',
+      'user_name_label' => 'HPP Key',
+      'signature_label' => 'PS Store ID',
+      'url_site_default' => 'https://www3.moneris.com/',
+      'url_site_test_default' => 'https://esqa.moneris.com/',
+      'payment_type' => 1
+    ),
+  );
+
   return _moneriseselect_civix_civicrm_managed($entities);
 }
